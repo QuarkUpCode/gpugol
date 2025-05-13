@@ -39,7 +39,8 @@ int mainloop(SDL_Window* window){
 	cl_kernel kernel_chromatic;
 	
 	cl_mem d_gamebuffer;
-	cl_mem d_pixelBuffer;
+	cl_mem d_pixelBuffer_0;
+	cl_mem d_pixelBuffer_1;
 
 
 	CL_err = clGetPlatformIDs(1, &platform, NULL);
@@ -49,7 +50,8 @@ int mainloop(SDL_Window* window){
 	queue = clCreateCommandQueueWithProperties(context, device, NULL, &CL_err);
 
 	d_gamebuffer = clCreateBuffer(context, CL_MEM_READ_WRITE, GAMENB * sizeof(uint8_t) * GAMESIZE_X * GAMESIZE_Y, NULL, &CL_err);
-	d_pixelBuffer = clCreateBuffer(context, CL_MEM_READ_WRITE , WIDTH*HEIGHT*sizeof(uint32_t), NULL, &CL_err);
+	d_pixelBuffer_0 = clCreateBuffer(context, CL_MEM_READ_WRITE , WIDTH*HEIGHT*sizeof(uint32_t), NULL, &CL_err);
+	d_pixelBuffer_1 = clCreateBuffer(context, CL_MEM_READ_WRITE , WIDTH*HEIGHT*sizeof(uint32_t), NULL, &CL_err);
 
 
 	program_gol = clCreateProgramWithSource(context, 1, &kernelSource_gol, NULL, &CL_err);
@@ -94,6 +96,11 @@ int mainloop(SDL_Window* window){
 	uint32_t frameStart, frameTime;
 	frameStart = 0;
 
+	cl_mem frontBuffer = d_pixelBuffer_0;
+	cl_mem backBuffer = d_pixelBuffer_1;
+
+	char fb = 0;
+
 	while(!done){
 
 		done = m_handleInput(&keyboardState);
@@ -112,7 +119,7 @@ int mainloop(SDL_Window* window){
 		clSetKernelArg(kernel_render, 0, sizeof(gamesize), &gamesize);
 		clSetKernelArg(kernel_render, 1, sizeof(screensize), &screensize);
 		clSetKernelArg(kernel_render, 2, sizeof(cl_mem), &d_gamebuffer);
-		clSetKernelArg(kernel_render, 3, sizeof(cl_mem), &d_pixelBuffer);
+		clSetKernelArg(kernel_render, 3, sizeof(cl_mem), &backBuffer);
 
 		global_size = WIDTH*HEIGHT;
 		CL_err = clEnqueueNDRangeKernel(queue, kernel_render, 1, NULL, &global_size, NULL, 0, NULL, NULL);
@@ -120,17 +127,28 @@ int mainloop(SDL_Window* window){
 		clFinish(queue);
 		
 		clSetKernelArg(kernel_chromatic, 0, sizeof(screensize), &screensize);
-		clSetKernelArg(kernel_chromatic, 1, sizeof(cl_mem), &d_pixelBuffer);
+		clSetKernelArg(kernel_chromatic, 1, sizeof(cl_mem), &backBuffer);
+		clSetKernelArg(kernel_chromatic, 2, sizeof(cl_mem), &frontBuffer);
 
 		global_size = WIDTH*HEIGHT;
 		CL_err = clEnqueueNDRangeKernel(queue, kernel_chromatic, 1, NULL, &global_size, NULL, 0, NULL, NULL);
 
 		clFinish(queue);
 
-		CL_err = clEnqueueReadBuffer(queue, d_pixelBuffer, CL_TRUE, 0, WIDTH*HEIGHT*sizeof(uint32_t), SDL_GetWindowSurface(window)->pixels, 0, NULL, NULL);
+		CL_err = clEnqueueReadBuffer(queue, frontBuffer, CL_TRUE, 0, WIDTH*HEIGHT*sizeof(uint32_t), SDL_GetWindowSurface(window)->pixels, 0, NULL, NULL);
 
 		clFinish(queue);
 
+		if(fb){
+			frontBuffer = d_pixelBuffer_1;
+			backBuffer = d_pixelBuffer_0;
+		}
+		else{
+			frontBuffer = d_pixelBuffer_0;
+			backBuffer = d_pixelBuffer_1;
+		}
+
+		fb = !fb;
 
 		m_endFrame(window, &frameStart, &frameTime);
 		printf("Frame done in %dms\n", frameTime);
