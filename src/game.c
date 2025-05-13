@@ -137,27 +137,27 @@ int mainloop(SDL_Window* window){
 		clFinish(queue);
 
 
-		// clSetKernelArg(kernel_render, 0, sizeof(gamesize), &gamesize);
-		// clSetKernelArg(kernel_render, 1, sizeof(screensize), &screensize);
-		// clSetKernelArg(kernel_render, 2, sizeof(cl_mem), &d_gamebuffer);
-		// clSetKernelArg(kernel_render, 3, sizeof(cl_mem), &backBuffer);
-
-		// global_size = WIDTH*HEIGHT;
-		// CL_err = clEnqueueNDRangeKernel(queue, kernel_render, 1, NULL, &global_size, NULL, 0, NULL, NULL);
-
-		// clFinish(queue);
-		
-		clSetKernelArg(kernel_chromatic, 0, sizeof(int), &gamenb);
-		clSetKernelArg(kernel_chromatic, 1, sizeof(gamesize), &gamesize);
-		clSetKernelArg(kernel_chromatic, 2, sizeof(cl_mem), &d_gamebuffer);
-		clSetKernelArg(kernel_chromatic, 3, sizeof(screensize), &screensize);
-		clSetKernelArg(kernel_chromatic, 4, sizeof(cl_mem), &backBuffer);
-		clSetKernelArg(kernel_chromatic, 5, sizeof(cl_mem), &frontBuffer);
+		clSetKernelArg(kernel_render, 0, sizeof(gamesize), &gamesize);
+		clSetKernelArg(kernel_render, 1, sizeof(screensize), &screensize);
+		clSetKernelArg(kernel_render, 2, sizeof(cl_mem), &d_gamebuffer);
+		clSetKernelArg(kernel_render, 3, sizeof(cl_mem), &backBuffer);
 
 		global_size = WIDTH*HEIGHT;
-		CL_err = clEnqueueNDRangeKernel(queue, kernel_chromatic, 1, NULL, &global_size, NULL, 0, NULL, NULL);
+		CL_err = clEnqueueNDRangeKernel(queue, kernel_render, 1, NULL, &global_size, NULL, 0, NULL, NULL);
 
 		clFinish(queue);
+		
+		// clSetKernelArg(kernel_chromatic, 0, sizeof(int), &gamenb);
+		// clSetKernelArg(kernel_chromatic, 1, sizeof(gamesize), &gamesize);
+		// clSetKernelArg(kernel_chromatic, 2, sizeof(cl_mem), &d_gamebuffer);
+		// clSetKernelArg(kernel_chromatic, 3, sizeof(screensize), &screensize);
+		// clSetKernelArg(kernel_chromatic, 4, sizeof(cl_mem), &backBuffer);
+		// clSetKernelArg(kernel_chromatic, 5, sizeof(cl_mem), &frontBuffer);
+
+		// global_size = WIDTH*HEIGHT;
+		// CL_err = clEnqueueNDRangeKernel(queue, kernel_chromatic, 1, NULL, &global_size, NULL, 0, NULL, NULL);
+
+		// clFinish(queue);
 
 		// CL_err = clEnqueueReadBuffer(queue, backBuffer, CL_TRUE, 0, WIDTH*HEIGHT*sizeof(uint32_t), SDL_GetWindowSurface(window)->pixels, 0, NULL, NULL);
 		CL_err = clEnqueueReadBuffer(queue, frontBuffer, CL_TRUE, 0, WIDTH*HEIGHT*sizeof(uint32_t), SDL_GetWindowSurface(window)->pixels, 0, NULL, NULL);
