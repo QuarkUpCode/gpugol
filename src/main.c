@@ -10,7 +10,7 @@
 
 int main(int argc, char** argv){
 
-	SDL_Window* window = initSDL("Solosis");
+	SDL_Window* window = initSDL("GPUGOL");
 
 	mainloop(window);
 
