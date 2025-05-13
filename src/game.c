@@ -20,7 +20,8 @@ int mainloop(SDL_Window* window){
 	else{
 		printf("Err %d\n", CL_err);
 	}
-	char* kernelSource = loadfile("src/kernel/gol.cl");
+	char* kernelSource_gol = loadfile("src/kernel/gol.cl");
+	char* kernelSource_chromatic = loadfile("src/kernel/chromatic.cl");
 
 
 	cl_platform_id platform;
@@ -28,11 +29,14 @@ int mainloop(SDL_Window* window){
 	cl_context context;
 	cl_command_queue queue;
 	
-	cl_program program;
+	cl_program program_gol;
+	cl_program program_chromatic;
 	
 	cl_kernel kernel_game_step;
 	cl_kernel kernel_render;
 	cl_kernel kernel_seed_grids;
+
+	cl_kernel kernel_chromatic;
 	
 	cl_mem d_gamebuffer;
 	cl_mem d_pixelBuffer;
@@ -48,16 +52,22 @@ int mainloop(SDL_Window* window){
 	d_pixelBuffer = clCreateBuffer(context, CL_MEM_READ_WRITE , WIDTH*HEIGHT*sizeof(uint32_t), NULL, &CL_err);
 
 
-	program = clCreateProgramWithSource(context, 1, &kernelSource, NULL, &CL_err);
+	program_gol = clCreateProgramWithSource(context, 1, &kernelSource_gol, NULL, &CL_err);
+	program_chromatic = clCreateProgramWithSource(context, 1, &kernelSource_chromatic, NULL, &CL_err);
 	
 	printf("Building program\n");
 	printf("Miaou %d\n", CL_err);
-	CL_err = clBuildProgram(program, 1, &device, NULL, NULL, NULL);
+	CL_err = clBuildProgram(program_gol, 1, &device, NULL, NULL, NULL);
+	printf("Miaou %d\n", CL_err);
+	printf("Miaou %d\n", CL_err);
+	CL_err = clBuildProgram(program_chromatic, 1, &device, NULL, NULL, NULL);
 	printf("Miaou %d\n", CL_err);
 
-	kernel_game_step = clCreateKernel(program, "game_step", &CL_err);
-	kernel_seed_grids = clCreateKernel(program, "seed_grids", &CL_err);
-	kernel_render = clCreateKernel(program, "render", &CL_err);
+	kernel_game_step = clCreateKernel(program_gol, "game_step", &CL_err);
+	kernel_seed_grids = clCreateKernel(program_gol, "seed_grids", &CL_err);
+	kernel_render = clCreateKernel(program_gol, "render", &CL_err);
+
+	kernel_chromatic = clCreateKernel(program_chromatic, "chromatic_aberation", &CL_err);
 
 	
 	
@@ -109,6 +119,13 @@ int mainloop(SDL_Window* window){
 
 		clFinish(queue);
 		
+		clSetKernelArg(kernel_chromatic, 0, sizeof(screensize), &screensize);
+		clSetKernelArg(kernel_chromatic, 1, sizeof(cl_mem), &d_pixelBuffer);
+
+		global_size = WIDTH*HEIGHT;
+		CL_err = clEnqueueNDRangeKernel(queue, kernel_chromatic, 1, NULL, &global_size, NULL, 0, NULL, NULL);
+
+		clFinish(queue);
 
 		CL_err = clEnqueueReadBuffer(queue, d_pixelBuffer, CL_TRUE, 0, WIDTH*HEIGHT*sizeof(uint32_t), SDL_GetWindowSurface(window)->pixels, 0, NULL, NULL);
 

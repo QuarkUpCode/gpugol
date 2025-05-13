@@ -97,6 +97,7 @@ __kernel void render(int2 gamesize, int2 size, __global uchar* gamebuffer, __glo
 		cellg = gamebuffer[get_index((int3){floor((uc+0.5)*gamesize.x)/scale, floor((vc+0.5)*gamesize.y)/scale, 1}, gamesize)];
 		cellb = gamebuffer[get_index((int3){floor((uc+0.5)*gamesize.x)/scale, floor((vc+0.5)*gamesize.y)/scale, 2}, gamesize)];
 		color = 0xff000000 | (cellr<<16) | (cellg<<8) | (cellb<<0);
+		color = 0xff000000 | (cellr<<16) | (cellr<<8) | (cellr<<0);
 
 	}
 
