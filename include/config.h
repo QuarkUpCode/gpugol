@@ -6,9 +6,9 @@
 
 #define FPS 60
 
-#define GAMENB 255
-#define GAMESIZE_X 16
-#define GAMESIZE_Y 16
+#define GAMENB (255*3)
+#define GAMESIZE_X 64
+#define GAMESIZE_Y 64
 
 
 #endif

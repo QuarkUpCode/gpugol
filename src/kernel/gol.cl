@@ -87,22 +87,26 @@ __kernel void render(int2 gamesize, int2 size, __global uchar* gamebuffer, __glo
 	int scale = 1;
 
 	uint color = 0xff123456;
-	uchar cellr;
-	uchar cellg;
-	uchar cellb;
+	uchar cellr = 0;
+	uchar cellg = 0;
+	uchar cellb = 0;
 
-	uchar acc = 0;
+	// uchar acc = 0;
 
 	if(uc >= -0.5f && uc < 0.5f){
 		for(int i=0; i<255; i++){
-			acc += (gamebuffer[get_index((int3){floor((uc+0.5f)*gamesize.x)/scale, floor((vc+0.5f)*gamesize.y)/scale, i}, gamesize)] != 0);
+			// acc += (gamebuffer[get_index((int3){floor((uc+0.5f)*gamesize.x)/scale, floor((vc+0.5f)*gamesize.y)/scale, i}, gamesize)] != 0);
+			cellr += (gamebuffer[get_index((int3){floor((uc+0.5f)*gamesize.x)/scale, floor((vc+0.5f)*gamesize.y)/scale, i}, gamesize)] != 0);
+			cellg += (gamebuffer[get_index((int3){floor((uc+0.5f)*gamesize.x)/scale, floor((vc+0.5f)*gamesize.y)/scale, i + 255}, gamesize)] != 0);
+			cellb += (gamebuffer[get_index((int3){floor((uc+0.5f)*gamesize.x)/scale, floor((vc+0.5f)*gamesize.y)/scale, i + (2*255)}, gamesize)] != 0);
+
 		}
 		// cellr = gamebuffer[get_index((int3){floor((uc+0.5)*gamesize.x)/scale, floor((vc+0.5)*gamesize.y)/scale, 0}, gamesize)];
 		// cellg = gamebuffer[get_index((int3){floor((uc+0.5)*gamesize.x)/scale, floor((vc+0.5)*gamesize.y)/scale, 1}, gamesize)];
 		// cellb = gamebuffer[get_index((int3){floor((uc+0.5)*gamesize.x)/scale, floor((vc+0.5)*gamesize.y)/scale, 2}, gamesize)];
-		// color = 0xff000000 | (cellr<<16) | (cellg<<8) | (cellb<<0);
+		color = 0xff000000 | (cellr<<16) | (cellg<<8) | (cellb<<0);
 		// color = 0xff000000 | (cellr<<16) | (cellr<<8) | (cellr<<0);
-		color = 0xff000000 | (acc<<16) | (acc<<8) | (acc<<0);
+		// color = 0xff000000 | (acc<<16) | (acc<<8) | (acc<<0);
 	}
 
 	pixels[(y * size.x) + x] = color;
