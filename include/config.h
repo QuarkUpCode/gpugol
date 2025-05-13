@@ -4,11 +4,11 @@
 #define WIDTH 1080
 #define HEIGHT 640
 
-#define FPS 5
+#define FPS 15
 
 #define GAMENB 3
-#define GAMESIZE_X 64
-#define GAMESIZE_Y 64
+#define GAMESIZE_X 32
+#define GAMESIZE_Y 32
 
 
 #endif
